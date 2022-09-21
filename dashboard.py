@@ -14,7 +14,7 @@ def get_data(path):
     return data
 
 def set_price(data):
-    data['price_m2'] = (data['price'] / data['sqft_lot']) /10.764
+    data['price_m2'] = data['price'] / (data['sqft_lot'] /10.764)
     return data.copy()
 
 def clean(data):
@@ -36,8 +36,9 @@ def analyze(data):
     #filtrando tabela de mediana pela quantidade de quartos de cada imóvel / selecionando melhores imóves (condition >=2)
     data3 = data2[['id','date','zipcode','price','price_median','sqft_living','price_m2','bedrooms','yr_built','condition','lat','long']] [data2['bedrooms_median'] == data2['bedrooms']] [data2['condition'] >=2].copy()
     #selecionando colunas que farão parte da tabela final
+
+    data3 = data3[['id','date','zipcode','price','price_median','sqft_living','price_m2','bedrooms','yr_built','lat','long']].copy().reset_index()
     data3['status'] = 'NA'
-    data3 = data3[['id','date','zipcode','status','price','price_median','sqft_living','price_m2','bedrooms','yr_built','lat','long']].copy().reset_index()
     data3 = data3.drop(columns = 'index')
     #análise de compra
     for i in range(len(data3)):
@@ -87,10 +88,11 @@ def dashboard(data,data3):
     mt.columns = ['ZIPCODE','TOTAL_HOUSES', 'PRICE','SQRT_LIVING', 'PRICE/M2']
 
     c1.subheader("Average Values")
-    c1.dataframe(mt,height = 400,width = 600)
+    c1.dataframe(mt,height = 300,width = 600)
 
     #atributos estaticos
-    n_atributes = data.select_dtypes(include=['int64','float64'])
+    ds = data[['price','bedrooms','bathrooms','sqft_living','yr_built','price_m2']].copy()
+    n_atributes = ds.select_dtypes(include=['int64','float64'])
     media = pd.DataFrame(n_atributes.apply(np.mean))
     mediana = pd.DataFrame(n_atributes.apply(np.median))
     desvio = pd.DataFrame(n_atributes.apply(np.std))
@@ -101,7 +103,7 @@ def dashboard(data,data3):
     ds.columns = ['attibutes', 'max', 'min', 'mean', 'median','std']
 
     c2.subheader("Descriptive Analysis")
-    c2.dataframe(ds,height = 400,width = 600)
+    c2.dataframe(ds,height = 300,width = 600)
 
     #mapa
     st.title('Map')
